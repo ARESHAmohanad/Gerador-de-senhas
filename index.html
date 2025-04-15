@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Senhas Avançado</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #161b22;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,255,150,0.2);
+      width: 320px;
+      text-align: center;
+    }
+    input[type=range] {
+      width: 100%;
+    }
+    button {
+      background-color: #238636;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 10px;
+    }
+    .senha {
+      font-weight: bold;
+      margin-top: 15px;
+      word-break: break-all;
+      transition: all 0.3s ease;
+    }
+    .forca, .historico {
+      margin-top: 10px;
+      text-align: left;
+    }
+    .forca-barra {
+      height: 10px;
+      background: #30363d;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .forca-barra div {
+      height: 100%;
+    }
+    .copy-btn {
+      margin-top: 10px;
+      background-color: #2ea043;
+    }
+    ul { list-style: none; padding: 0; margin-top: 10px; }
+    ul li { background: #21262d; padding: 5px; border-radius: 5px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+    ul li span { font-size: 0.9rem; word-break: break-word; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Gerador de Senhas</h2>
+    <label for="tamanho">Tamanho: <span id="tamanho_valor">12</span></label>
+    <input type="range" id="tamanho" min="4" max="32" value="12" oninput="atualizarTamanho()">
+    <br><br>
+    <label><input type="checkbox" id="maiusculas" checked> Incluir MAIÚSCULAS</label><br>
+    <label><input type="checkbox" id="minusculas" checked> Incluir minúsculas</label><br>
+    <label><input type="checkbox" id="numeros" checked> Incluir números</label><br>
+    <label><input type="checkbox" id="simbolos"> Incluir símbolos</label><br><br>
+    <button onclick="gerarSenha()">Gerar</button>
+    <div class="senha" id="resultado"></div>
+    <div class="forca" id="forca">
+      <div class="forca-barra"><div></div></div>
+      <small id="forca_texto"></small>
+    </div>
+    <button class="copy-btn" onclick="copiarSenha()">Copiar Senha</button>
+    <div class="historico">
+      <h4>Últimas Senhas</h4>
+      <ul id="historico_senhas"></ul>
+    </div>
+  </div>
+
+  <script>
+    function atualizarTamanho() {
+      const slider = document.getElementById("tamanho");
+      document.getElementById("tamanho_valor").textContent = slider.value;
+    }
+
+    function gerarSenha() {
+      const tamanho = document.getElementById("tamanho").value;
+      const usarMaiusculas = document.getElementById("maiusculas").checked;
+      const usarMinusculas = document.getElementById("minusculas").checked;
+      const usarNumeros = document.getElementById("numeros").checked;
+      const usarSimbolos = document.getElementById("simbolos").checked;
+
+      const letrasMaiusculas = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const letrasMinusculas = "abcdefghijklmnopqrstuvwxyz";
+      const numeros = "0123456789";
+      const simbolos = "!@#$%^&*()-_=+[]{};:,.<>?/";
+
+      let caracteres = "";
+      if (usarMaiusculas) caracteres += letrasMaiusculas;
+      if (usarMinusculas) caracteres += letrasMinusculas;
+      if (usarNumeros) caracteres += numeros;
+      if (usarSimbolos) caracteres += simbolos;
+
+      if (caracteres.length === 0) {
+        document.getElementById("resultado").textContent = "Selecione pelo menos uma opção.";
+        return;
+      }
+
+      let senha = "";
+      for (let i = 0; i < tamanho; i++) {
+        const randIndex = Math.floor(Math.random() * caracteres.length);
+        senha += caracteres[randIndex];
+      }
+
+      document.getElementById("resultado").textContent = senha;
+      avaliarForca(senha);
+      atualizarHistorico(senha);
+    }
+
+    function avaliarForca(senha) {
+      const barra = document.querySelector(".forca-barra div");
+      const texto = document.getElementById("forca_texto");
+      let pontuacao = 0;
+      if (/[A-Z]/.test(senha)) pontuacao++;
+      if (/[a-z]/.test(senha)) pontuacao++;
+      if (/[0-9]/.test(senha)) pontuacao++;
+      if (/[^A-Za-z0-9]/.test(senha)) pontuacao++;
+
+      const largura = pontuacao * 25;
+      let cor = "red";
+      let desc = "Fraca";
+      if (pontuacao === 2) { cor = "orange"; desc = "Média"; }
+      if (pontuacao === 3) { cor = "yellow"; desc = "Forte"; }
+      if (pontuacao === 4) { cor = "limegreen"; desc = "Muito Forte"; }
+
+      barra.style.width = largura + "%";
+      barra.style.backgroundColor = cor;
+      texto.textContent = desc;
+    }
+
+    function copiarSenha() {
+      const senha = document.getElementById("resultado").textContent;
+      if (!senha) return;
+      navigator.clipboard.writeText(senha).then(() => {
+        alert("Senha copiada para a área de transferência!");
+      });
+    }
+
+    function atualizarHistorico(senha) {
+      let historico = JSON.parse(localStorage.getItem("senhas")) || [];
+      historico.unshift(senha);
+      historico = historico.slice(0, 5);
+      localStorage.setItem("senhas", JSON.stringify(historico));
+      renderizarHistorico(historico);
+    }
+
+    function renderizarHistorico(lista) {
+      const ul = document.getElementById("historico_senhas");
+      ul.innerHTML = "";
+      lista.forEach(s => {
+        const li = document.createElement("li");
+        const span = document.createElement("span");
+        span.textContent = s;
+        const btn = document.createElement("button");
+        btn.textContent = "Copiar";
+        btn.onclick = () => navigator.clipboard.writeText(s);
+        li.appendChild(span);
+        li.appendChild(btn);
+        ul.appendChild(li);
+      });
+    }
+
+    window.onload = () => {
+      const historico = JSON.parse(localStorage.getItem("senhas")) || [];
+      renderizarHistorico(historico);
+    };
+  </script>
+</body>
+</html>
