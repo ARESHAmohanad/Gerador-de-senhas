@@ -1,0 +1,26 @@
+# 🔐 Gerador de Senhas - Projeto Web
+
+Um gerador de senhas moderno, responsivo e funcional, desenvolvido com **HTML**, **CSS** e **JavaScript** puro. Ideal para integrar em sites, projetos pessoais ou como ferramenta de segurança.
+
+---
+
+## ✨ Funcionalidades
+
+- Escolha do tamanho da senha (4 a 32 caracteres)
+- Inclusão de:
+  - Letras maiúsculas
+  - Letras minúsculas
+  - Números
+  - Símbolos especiais
+- Medidor visual de **força da senha**
+- **Botão de copiar** para a área de transferência
+- Histórico das últimas 5 senhas geradas
+- Armazenamento local com `localStorage` (não perde ao recarregar)
+
+---
+
+## 🚀 Como usar
+
+1. Clone ou baixe o repositório:
+   ```bash
+   git clone https://github.com/seuusuario/gerador-senhas
